@@ -1,0 +1,60 @@
+<main class="workspace-shell" [class.hide-sidebar]="hideSidebar">
+  <aside class="nav-column" *ngIf="!hideSidebar">
+    <header class="nav-header">
+      <div class="brand-mark">AO</div>
+      <div>
+        <p class="brand-title">AddOnTest</p>
+        <p class="brand-subtitle">Manager</p>
+      </div>
+    </header>
+
+    <label class="lookup-field">
+      <span>Look up menus</span>
+      <input
+        type="search"
+        placeholder="Search modules"
+        [(ngModel)]="searchTerm"
+      />
+    </label>
+
+    <section class="module-groups" *ngIf="filteredModuleGroups.length; else emptyModules">
+      <article class="module-group" *ngFor="let group of filteredModuleGroups">
+        <p class="group-label">{{ group.title }}</p>
+        <a
+          class="module-link"
+          *ngFor="let item of group.items"
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          {{ item.title }}
+        </a>
+      </article>
+    </section>
+
+    <ng-template #emptyModules>
+      <div class="empty-state">
+        <p>No menus match that keyword.</p>
+        <small>Try a different phrase.</small>
+      </div>
+    </ng-template>
+
+    <button class="logout-button" type="button" (click)="logout()">
+      <span>←</span>
+      <span>Logout</span>
+    </button>
+  </aside>
+
+  <section class="panel-main">
+    <div class="top-bar">
+      <p class="eyebrow">Drag & Relate</p>
+      <div class="session">
+        <span>29.10.25</span>
+        <span>13:37</span>
+      </div>
+    </div>
+
+    <router-outlet></router-outlet>
+  </section>
+</main>
+

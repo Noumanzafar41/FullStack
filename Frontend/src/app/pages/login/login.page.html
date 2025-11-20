@@ -1,0 +1,149 @@
+<section class="login-shell">
+  <div class="brand-side">
+    <div class="logo-chip">AO</div>
+    <p class="eyebrow">SAP Add-on Suite</p>
+    <h1>Welcome to AddOnTest Manager</h1>
+    <p class="lead">
+      Securely access inspections, purchasing signals, and production workflows from a single,
+      modern experience.
+    </p>
+
+    <ul class="benefits">
+      <li>
+        <strong>Single access portal</strong>
+        <span>All SAP B1 modules curated for quality teams.</span>
+      </li>
+      <li>
+        <strong>Guided workboards</strong>
+        <span>Widgets, KPIs, and shortcuts launch instantly after sign-in.</span>
+      </li>
+      <li>
+        <strong>Enterprise security</strong>
+        <span>Backed by role-based policies and audit-ready logging.</span>
+      </li>
+    </ul>
+  </div>
+
+  <div class="forms-side">
+    <div class="auth-tabs" role="tablist">
+      <button type="button" [class.active]="activePanel === 'login'" (click)="switchPanel('login')">
+        Login
+      </button>
+      <button type="button" [class.active]="activePanel === 'register'" (click)="switchPanel('register')">
+        Create user
+      </button>
+      <button type="button" [class.active]="activePanel === 'forgot'" (click)="switchPanel('forgot')">
+        Forgot password
+      </button>
+    </div>
+
+    <form
+      class="auth-card"
+      *ngIf="activePanel === 'login'"
+      [formGroup]="loginForm"
+      (ngSubmit)="submitLogin()"
+    >
+      <header>
+        <p class="eyebrow">Account access</p>
+        <h2>Sign in to continue</h2>
+        <p class="muted">Use your company email and password to get started.</p>
+      </header>
+
+      <label>
+        <span>Email</span>
+        <input type="email" formControlName="email" placeholder="you@company.com" />
+        <small *ngIf="loginForm.controls.email.touched && loginForm.controls.email.invalid">
+          Please enter a valid email.
+        </small>
+      </label>
+
+      <label>
+        <span>Password</span>
+        <input type="password" formControlName="password" placeholder="••••••••" />
+        <small *ngIf="loginForm.controls.password.touched && loginForm.controls.password.invalid">
+          Password must be at least 6 characters.
+        </small>
+      </label>
+
+      <button type="submit" [disabled]="isSubmitting || loginForm.invalid">
+        {{ isSubmitting ? 'Authenticating…' : 'Login' }}
+      </button>
+    </form>
+
+    <form
+      class="auth-card"
+      *ngIf="activePanel === 'register'"
+      [formGroup]="registerForm"
+      (ngSubmit)="submitRegister()"
+    >
+      <header>
+        <p class="eyebrow">Create user</p>
+        <h2>Register a new user</h2>
+        <p class="muted">Grant controlled access for teammates in seconds.</p>
+      </header>
+
+      <label>
+        <span>Full name</span>
+        <input type="text" formControlName="name" placeholder="Jane Doe" />
+        <small *ngIf="registerForm.controls.name.touched && registerForm.controls.name.invalid">
+          Please enter at least 2 characters.
+        </small>
+      </label>
+
+      <label>
+        <span>Email</span>
+        <input type="email" formControlName="email" placeholder="you@company.com" />
+        <small *ngIf="registerForm.controls.email.touched && registerForm.controls.email.invalid">
+          Please enter a valid email.
+        </small>
+      </label>
+
+      <label>
+        <span>Password</span>
+        <input type="password" formControlName="password" placeholder="Create a strong password" />
+        <small *ngIf="registerForm.controls.password.touched && registerForm.controls.password.invalid">
+          Password must be at least 6 characters.
+        </small>
+      </label>
+
+      <button type="submit" [disabled]="isSubmitting || registerForm.invalid">
+        {{ isSubmitting ? 'Creating user…' : 'Create user' }}
+      </button>
+    </form>
+
+    <form
+      class="auth-card"
+      *ngIf="activePanel === 'forgot'"
+      [formGroup]="forgotForm"
+      (ngSubmit)="submitForgot()"
+    >
+      <header>
+        <p class="eyebrow">Password help</p>
+        <h2>Send reset instructions</h2>
+        <p class="muted">We’ll email a secure link to verify your identity.</p>
+      </header>
+
+      <label>
+        <span>Email</span>
+        <input type="email" formControlName="email" placeholder="you@company.com" />
+        <small *ngIf="forgotForm.controls.email.touched && forgotForm.controls.email.invalid">
+          Please enter a valid email.
+        </small>
+      </label>
+
+      <button type="submit" [disabled]="isSubmitting || forgotForm.invalid">
+        {{ isSubmitting ? 'Sending email…' : 'Email reset link' }}
+      </button>
+    </form>
+
+    <p class="support">
+      Need admin assistance?
+      <a href="mailto:support@example.com">Contact support</a>
+    </p>
+
+    <div class="status-banner" *ngIf="statusMessage" [attr.data-variant]="statusType">
+      {{ statusMessage }}
+    </div>
+  </div>
+</section>
+

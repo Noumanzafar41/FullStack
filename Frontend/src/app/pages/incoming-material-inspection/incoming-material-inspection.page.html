@@ -1,0 +1,206 @@
+<section class="qc-page">
+  <!-- List View -->
+  <div class="list-view" *ngIf="!showDialog">
+    <header>
+      <div>
+        <p class="eyebrow">Incoming material inspection</p>
+        <h1>Dock Inspection</h1>
+      </div>
+      <button type="button" class="add-button" (click)="openDialog()">Add new</button>
+    </header>
+
+    <section class="table-shell">
+      <div class="table-state" *ngIf="isLoading">Loading inspections…</div>
+      <div class="table-state error" *ngIf="!isLoading && loadError">{{ loadError }}</div>
+
+      <table *ngIf="!isLoading && !loadError && records.length">
+        <thead>
+          <tr>
+            <th>Inward Type</th>
+            <th>GRN / Sub GRN</th>
+            <th>Supplier / Vendor</th>
+            <th>Inspection Required</th>
+            <th>Test Certificate</th>
+            <th>Corrective Action</th>
+            <th>Remarks</th>
+            <th>Items Count</th>
+            <th>Created At</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let record of records">
+            <td>{{ record.inwardType || 'N/A' }}</td>
+            <td>{{ record.grnType || 'N/A' }}</td>
+            <td>{{ record.supplierVendor || 'N/A' }}</td>
+            <td>{{ record.inspectionRequired ? 'Yes' : 'No' }}</td>
+            <td>{{ record.testCertificate ? 'Yes' : 'No' }}</td>
+            <td>{{ record.corrActionRequired ? 'Yes' : 'No' }}</td>
+            <td>{{ record.remarks || 'N/A' }}</td>
+            <td>{{ (record.details && record.details.length) || 0 }}</td>
+            <td>{{ record.createdAt | date:'short' }}</td>
+            <td>
+              <button type="button" class="detail-button" (click)="viewRecord(record)">Detail</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="table-state" *ngIf="!isLoading && !loadError && !records.length">
+        No incoming inspections recorded yet.
+      </div>
+    </section>
+  </div>
+
+  <!-- Full Page Form View -->
+  <div class="form-view" *ngIf="showDialog">
+    <header class="form-header">
+      <h2>Add New Incoming Material Inspection</h2>
+      <button type="button" class="close-button" (click)="closeDialog()" aria-label="Close">×</button>
+    </header>
+    
+    <form class="full-page-form" [formGroup]="form" (ngSubmit)="submit()">
+      <!-- Basic Information, Settings, and Remarks -->
+      <section class="form-section">
+      
+        <div class="form-grid">
+          <label>
+            <span>Inward Type</span>
+            <input type="text" formControlName="inwardType" />
+          </label>
+          <label>
+            <span>GRN / Sub GRN</span>
+            <input type="text" formControlName="grnType" />
+          </label>
+          <label class="full-width">
+            <span>Supplier / Vendor</span>
+            <input type="text" formControlName="supplierVendor" />
+          </label>
+        </div>
+
+        <div class="checkbox-group">
+          <label class="checkbox">
+            <input type="checkbox" formControlName="reworkLocation" />
+            <span>Rework Location</span>
+          </label>
+          <label class="checkbox">
+            <input type="checkbox" formControlName="inspectionRequired" />
+            <span>Inspection Required</span>
+          </label>
+          <label class="checkbox">
+            <input type="checkbox" formControlName="testCertificate" />
+            <span>Test Certificate Received</span>
+          </label>
+          <label class="checkbox">
+            <input type="checkbox" formControlName="corrActionRequired" />
+            <span>Corrective Action Required</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Line Items -->
+      <section class="form-section">
+         <div class="section-header-row">
+          <h3 class="section-title">Line Items</h3>
+          <button type="button" class="add-row-button" (click)="addDetailRow()" [disabled]="isReadOnly">+ Add Item</button>
+        </div>
+
+        <div class="detail-items-container">
+          <div class="detail-item-card" *ngFor="let group of details.controls; let i = index" [formGroup]="group">
+            <div class="detail-item-header">
+              <span class="item-number">#{{ i + 1 }}</span>
+              <button 
+                type="button" 
+                class="remove-item-button" 
+                (click)="removeDetailRow(i)" 
+                [disabled]="isReadOnly || details.length === 1"
+              >
+                Remove
+              </button>
+            </div>
+
+            <div class="detail-fields-grid">
+              <label>
+                <span>Item ID <span class="required">*</span></span>
+                <input type="text" formControlName="itemId" />
+              </label>
+              <label class="full-width">
+                <span>Item Description <span class="required">*</span></span>
+                <input type="text" formControlName="itemDescription" />
+              </label>
+              <label>
+                <span>Unit <span class="required">*</span></span>
+                <input type="text" formControlName="unit" />
+              </label>
+              <label>
+                <span>Inspection Qty <span class="required">*</span></span>
+                <input type="number" formControlName="inspectionQty" min="0" step="0.01" />
+              </label>
+              <label>
+                <span>Accepted Qty</span>
+                <input type="number" formControlName="acceptedQty" min="0" step="0.01" />
+              </label>
+              <label>
+                <span>Accepted with Deviation</span>
+                <input type="number" formControlName="acceptedWithDeviation" min="0" step="0.01" />
+              </label>
+              <label>
+                <span>Rejected Qty</span>
+                <input type="number" formControlName="rejectedQty" min="0" step="0.01" />
+              </label>
+              <label>
+                <span>Rework Qty</span>
+                <input type="number" formControlName="reworkQty" min="0" step="0.01" />
+              </label>
+              <label>
+                <span>QC Number</span>
+                <input type="text" formControlName="qcNumber" />
+              </label>
+              <label>
+                <span>Receiving Location</span>
+                <input type="text" formControlName="receivingLocation" />
+              </label>
+              <label>
+                <span>Accepted Location</span>
+                <input type="text" formControlName="acceptedLocation" />
+              </label>
+              <label>
+                <span>Status <span class="required">*</span></span>
+                <input type="text" formControlName="status" />
+              </label>
+              <label class="full-width">
+                <span>Reason</span>
+                <input type="text" formControlName="reason" />
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Remarks -->
+      <section class="form-section">
+        <label class="full-width">
+          <span>Remarks</span>
+          <textarea formControlName="remarks" rows="2"></textarea>
+        </label>
+      </section>
+
+      <div class="form-actions">
+        <button type="button" class="secondary" (click)="closeDialog()">
+          {{ isReadOnly ? 'Close' : 'Cancel' }}
+        </button>
+        <button
+          *ngIf="!isReadOnly"
+          type="submit"
+          class="primary"
+          [disabled]="isSaving"
+        >
+          {{ isSaving ? 'Saving…' : 'Save inspection' }}
+        </button>
+        <p class="error" *ngIf="saveError">{{ saveError }}</p>
+      </div>
+    </form>
+  </div>
+
+</section>
+

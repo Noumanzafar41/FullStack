@@ -1,0 +1,83 @@
+<section class="parameter-page">
+  <header>
+    <div>
+      <p class="eyebrow">QC / Parameter master</p>
+      <h1>Parameter Library</h1>
+      <p class="muted">Capture every parameter and specification before executing inspections.</p>
+    </div>
+    <button type="button" class="add-button" (click)="openDialog()">Add new</button>
+  </header>
+
+  <section class="table-shell">
+    <div class="table-state" *ngIf="isLoading">Loading parameters…</div>
+    <div class="table-state error" *ngIf="!isLoading && loadError">{{ loadError }}</div>
+
+    <table *ngIf="!isLoading && !loadError && records.length">
+      <thead>
+        <tr>
+          <th>Parameter type</th>
+          <th>Parameter name</th>
+          <th>Process / product</th>
+          <th>Specification characteristic</th>
+          <th>Parameter code</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let record of records">
+          <td>{{ record.parameterType }}</td>
+          <td>{{ record.parameterName }}</td>
+          <td>{{ record.processProduct }}</td>
+          <td>{{ record.specCharacteristic }}</td>
+          <td>{{ record.parameterCode }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="table-state" *ngIf="!isLoading && !loadError && !records.length">
+      No parameters recorded yet.
+    </div>
+  </section>
+
+  <!-- Dialog/Modal for adding new parameter -->
+  <div class="dialog-overlay" *ngIf="showDialog" (click)="closeDialog()">
+    <div class="dialog-content" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h2>Add New Parameter</h2>
+        <button type="button" class="close-button" (click)="closeDialog()" aria-label="Close">×</button>
+      </div>
+      <form class="parameter-form" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="grid">
+          <label>
+            <span>Parameter type</span>
+            <input type="text" formControlName="parameterType" />
+          </label>
+          <label>
+            <span>Parameter name</span>
+            <input type="text" formControlName="parameterName" />
+          </label>
+          <label>
+            <span>Process / product</span>
+            <input type="text" formControlName="processProduct" />
+          </label>
+          <label>
+            <span>Specification characteristic</span>
+            <input type="text" formControlName="specCharacteristic" />
+          </label>
+          <label>
+            <span>Parameter code</span>
+            <input type="text" formControlName="parameterCode" />
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="secondary" (click)="closeDialog()">Cancel</button>
+          <button type="submit" class="primary" [disabled]="isSaving">
+            {{ isSaving ? 'Saving…' : 'Save parameter' }}
+          </button>
+          <p class="error" *ngIf="saveError">{{ saveError }}</p>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+

@@ -1,0 +1,18 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: radial-gradient(circle at 5% -10%, #3a4d74, #121d34 45%, #05070c 100%);
+  color: #f5f8ff;
+}
+
+:host *,
+:host *::before,
+:host *::after {
+  box-sizing: border-box;
+}
+
+router-outlet {
+  display: contents;
+}
+

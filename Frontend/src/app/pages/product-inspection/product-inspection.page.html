@@ -1,0 +1,222 @@
+<section class="qc-page">
+  <!-- List View -->
+  <div class="list-view" *ngIf="!showDialog">
+    <header>
+      <div>
+        <p class="eyebrow">Product inspection</p>
+        <h1>Inspection Entry</h1>
+      </div>
+      <button type="button" class="add-button" (click)="openDialog()">Add new</button>
+    </header>
+
+    <section class="table-shell">
+      <div class="table-state" *ngIf="isLoading">Loading inspections…</div>
+      <div class="table-state error" *ngIf="!isLoading && loadError">{{ loadError }}</div>
+
+      <table *ngIf="!isLoading && !loadError && records.length">
+        <thead>
+          <tr>
+            <th>Item ID</th>
+            <th>Description</th>
+            <th>Prod. Order</th>
+            <th>Sample Qty</th>
+            <th>Accepted</th>
+            <th>Rejected</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let record of records">
+            <td>{{ record.itemId }}</td>
+            <td>{{ record.itemDescription }}</td>
+            <td>{{ record.productionOrderNo || '—' }}</td>
+            <td>{{ record.sampleQty | number : '1.0-2' }}</td>
+            <td>{{ record.acceptedQty | number : '1.0-2' }}</td>
+            <td>{{ record.rejectedQty | number : '1.0-2' }}</td>
+            <td>{{ record.status || '—' }}</td>
+            <td>{{ record.createdAt | date : 'short' }}</td>
+            <td>
+              <button type="button" class="detail-button" (click)="viewRecord(record)">Detail</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="table-state" *ngIf="!isLoading && !loadError && !records.length">
+        No product inspections recorded yet.
+      </div>
+    </section>
+  </div>
+
+  <!-- Full Page Form View -->
+  <div class="form-view" *ngIf="showDialog">
+    <header class="form-header">
+      <h2>{{ isReadOnly ? 'Inspection Details' : 'Add Product Inspection' }}</h2>
+      <button type="button" class="close-button" (click)="closeDialog()" aria-label="Close">×</button>
+    </header>
+
+    <form class="full-page-form" [formGroup]="form" (ngSubmit)="submit()">
+      <section class="form-section">
+        <div class="form-grid">
+          <label>
+            <span>Item ID *</span>
+            <input type="text" formControlName="itemId" />
+          </label>
+          <label>
+            <span>Item description *</span>
+            <input type="text" formControlName="itemDescription" />
+          </label>
+          <label>
+            <span>Production order no.</span>
+            <input type="text" formControlName="productionOrderNo" />
+          </label>
+          <label>
+            <span>Receipt from production</span>
+            <input type="text" formControlName="receiptFromProduction" />
+          </label>
+          <label>
+            <span>Inspected by</span>
+            <input type="text" formControlName="inspectedBy" />
+          </label>
+          <label>
+            <span>Control plan no.</span>
+            <input type="text" formControlName="controlPlanNo" />
+          </label>
+          <label>
+            <span>Container / bag no.</span>
+            <input type="text" formControlName="containerBagNo" />
+          </label>
+          <label>
+            <span>Bottle / pellet no.</span>
+            <input type="text" formControlName="bottlePelletNo" />
+          </label>
+          <label>
+            <span>Doc number</span>
+            <input type="text" formControlName="docNumber" />
+          </label>
+          <label>
+            <span>Inspection date</span>
+            <input type="date" formControlName="inspectionDate" />
+          </label>
+          <label>
+            <span>Prod. order date</span>
+            <input type="date" formControlName="productionOrderDate" />
+          </label>
+          <label>
+            <span>Sample qty *</span>
+            <input type="number" formControlName="sampleQty" />
+          </label>
+          <label>
+            <span>Department</span>
+            <input type="text" formControlName="department" />
+          </label>
+          <label class="checkbox">
+            <input type="checkbox" formControlName="preProduction" />
+            <span>Pre-production</span>
+          </label>
+          <label>
+            <span>Produced qty</span>
+            <input type="number" formControlName="producedQty" />
+          </label>
+          <label>
+            <span>Accepted qty</span>
+            <input type="number" formControlName="acceptedQty" />
+          </label>
+          <label>
+            <span>Rejected qty</span>
+            <input type="number" formControlName="rejectedQty" />
+          </label>
+          <label>
+            <span>Status</span>
+            <input type="text" formControlName="status" />
+          </label>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="section-header-row">
+          <h3 class="section-title">Parameter lines</h3>
+          <button type="button" class="add-row-button" (click)="addDetailRow()" [disabled]="isReadOnly">+ Add row</button>
+        </div>
+
+        <div class="detail-items-container">
+          <div class="detail-item-card" *ngFor="let group of details.controls; let i = index" [formGroup]="group">
+            <div class="detail-item-header">
+              <span class="item-number">#{{ i + 1 }}</span>
+              <button
+                type="button"
+                class="remove-item-button"
+                (click)="removeDetailRow(i)"
+                [disabled]="isReadOnly || details.length === 1"
+              >
+                Remove
+              </button>
+            </div>
+
+            <div class="detail-fields-grid">
+              <label>
+                <span>Param type</span>
+                <input type="text" formControlName="parameterType" />
+              </label>
+              <label>
+                <span>Parameter *</span>
+                <input type="text" formControlName="parameterName" />
+              </label>
+              <label>
+                <span>Specification *</span>
+                <input type="text" formControlName="specification" />
+              </label>
+              <label>
+                <span>Sample size *</span>
+                <input type="number" formControlName="sampleSize" />
+              </label>
+              <label>
+                <span>Result *</span>
+                <input type="number" formControlName="result" />
+              </label>
+              <label>
+                <span>Std deviation *</span>
+                <input type="number" formControlName="stdDeviation" />
+              </label>
+              <label class="full-width">
+                <span>Remarks</span>
+                <input type="text" formControlName="remarks" />
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="form-grid single">
+          <label>
+            <span>Remarks</span>
+            <textarea formControlName="remarks" rows="2"></textarea>
+          </label>
+          <label>
+            <span>Special instructions</span>
+            <textarea formControlName="specialInstructions" rows="2"></textarea>
+          </label>
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <button type="button" class="secondary" (click)="closeDialog()">
+          {{ isReadOnly ? 'Close' : 'Cancel' }}
+        </button>
+        <button
+          *ngIf="!isReadOnly"
+          type="submit"
+          class="primary"
+          [disabled]="isSaving"
+        >
+          {{ isSaving ? 'Saving…' : 'Save inspection' }}
+        </button>
+        <p class="error" *ngIf="saveError">{{ saveError }}</p>
+      </div>
+    </form>
+  </div>
+</section>
+
