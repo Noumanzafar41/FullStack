@@ -2,7 +2,10 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 
-dotenv.config();
+// Only load dotenv in local development (not in Cloud Foundry)
+if (process.env.NODE_ENV !== 'production' || !process.env.VCAP_SERVICES) {
+  dotenv.config();
+}
 
 const { ensureSchema } = require('./database');
 
@@ -17,6 +20,7 @@ const incomingMaterialInspectionPlanRoutes = require('./routes/incoming-material
 
 const app = express();
 const port = process.env.PORT || 3000;
+const host = process.env.HOST || '0.0.0.0'; // Bind to 0.0.0.0 for Cloud Foundry
 
 app.use(cors());
 app.use(express.json());
@@ -37,8 +41,11 @@ app.use((_, res) => {
 const bootstrap = async () => {
   try {
     await ensureSchema();
-    app.listen(port, () => {
-      console.log(`Backend API ready → http://localhost:${port}`);
+    app.listen(port, host, () => {
+      console.log(`Backend API ready → http://${host}:${port}`);
+      if (process.env.VCAP_APPLICATION) {
+        console.log('Running on SAP BTP / Cloud Foundry');
+      }
     });
   } catch (error) {
     console.error('Failed to initialize database connection.', error);

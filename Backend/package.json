@@ -1,8 +1,12 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "API server for authentication flows backed by SQL Server.",
+  "description": "API server for authentication flows backed by SAP HANA Cloud.",
   "main": "src/index.js",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js"
@@ -11,11 +15,11 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@sap/hana-client": "^2.20.25",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "mssql": "^10.0.2"
+    "express": "^4.19.2"
   }
 }
 
