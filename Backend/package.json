@@ -1,18 +1,26 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "API server for authentication flows backed by SAP HANA Cloud.",
+  "description": "API server for authentication flows backed by SAP HANA Cloud, supporting QC and inspection management.",
   "main": "src/index.js",
+  "type": "module",
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
   },
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
+    "start": "node -r ./src/loadEnv.js src/index.js",
+    "dev": "nodemon -r ./src/loadEnv.js src/index.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "sap",
+    "hana",
+    "cloud",
+    "express",
+    "qc",
+    "inspection"
+  ],
+  "author": "Your Name",
   "license": "MIT",
   "dependencies": {
     "@sap/hana-client": "^2.20.25",
@@ -20,5 +28,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
   }
 }

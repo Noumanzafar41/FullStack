@@ -1,8 +1,9 @@
-const bcrypt = require('bcrypt');
-const { getPool, sql } = require('../database');
-const asyncHandler = require('../utils/asyncHandler');
+// src/controllers/auth.controller.js
+import bcrypt from 'bcrypt';
+import { getPool, sql } from '../database.js';
+import asyncHandler from '../utils/asyncHandler.js';
 
-const login = asyncHandler(async (req, res) => {
+export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body || {};
 
   if (!email || !password) {
@@ -14,7 +15,12 @@ const login = asyncHandler(async (req, res) => {
   const result = await pool
     .request()
     .input('email', sql.NVarChar(255), normalizedEmail)
-    .query('SELECT TOP (1) Id, Name, Email, PasswordHash FROM dbo.Users WHERE Email = @email');
+    .query(
+      `SELECT Id, Name, Email, PasswordHash 
+       FROM Users 
+       WHERE Email = @email 
+       LIMIT 1`
+    );
 
   if (!result.recordset.length) {
     return res.status(401).json({ message: 'Invalid credentials. Please try again.' });
@@ -27,6 +33,7 @@ const login = asyncHandler(async (req, res) => {
     return res.status(401).json({ message: 'Invalid credentials. Please try again.' });
   }
 
+  // For simplicity, generate a base64 token (replace with JWT for production)
   return res.json({
     message: 'Login successful.',
     token: Buffer.from(`${user.Email}:${Date.now()}`).toString('base64'),
@@ -34,7 +41,7 @@ const login = asyncHandler(async (req, res) => {
   });
 });
 
-const register = asyncHandler(async (req, res) => {
+export const register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body || {};
 
   if (!name || !email || !password) {
@@ -43,10 +50,11 @@ const register = asyncHandler(async (req, res) => {
 
   const normalizedEmail = email.toLowerCase();
   const pool = await getPool();
+
   const existingUser = await pool
     .request()
     .input('email', sql.NVarChar(255), normalizedEmail)
-    .query('SELECT 1 FROM dbo.Users WHERE Email = @email');
+    .query('SELECT 1 FROM Users WHERE Email = @email LIMIT 1');
 
   if (existingUser.recordset.length) {
     return res.status(409).json({ message: 'An account with this email already exists.' });
@@ -60,13 +68,14 @@ const register = asyncHandler(async (req, res) => {
     .input('email', sql.NVarChar(255), normalizedEmail)
     .input('passwordHash', sql.NVarChar(255), passwordHash)
     .query(
-      'INSERT INTO dbo.Users (Name, Email, PasswordHash) VALUES (@name, @email, @passwordHash);'
+      `INSERT INTO Users (Name, Email, PasswordHash) 
+       VALUES (@name, @email, @passwordHash)`
     );
 
   return res.status(201).json({ message: 'Account created successfully.' });
 });
 
-const forgotPassword = asyncHandler(async (req, res) => {
+export const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body || {};
 
   if (!email) {
@@ -77,16 +86,10 @@ const forgotPassword = asyncHandler(async (req, res) => {
   await pool
     .request()
     .input('email', sql.NVarChar(255), email.toLowerCase())
-    .query('SELECT 1 FROM dbo.Users WHERE Email = @email');
+    .query('SELECT 1 FROM Users WHERE Email = @email LIMIT 1');
 
+  // Implement email logic here if needed
   return res.json({
     message: 'If an account exists, password reset instructions were sent.'
   });
 });
-
-module.exports = {
-  login,
-  register,
-  forgotPassword
-};
-

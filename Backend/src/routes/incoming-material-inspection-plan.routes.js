@@ -1,9 +1,16 @@
-const express = require('express');
-const router = express.Router();
-const { getIncomingMaterialInspectionPlans, createIncomingMaterialInspectionPlan } = require('../controllers/incoming-material-inspection-plan.controller');
+// src/routes/incoming-material-inspection-plan.routes.js
+import express from 'express';
+import {
+  getIncomingMaterialInspectionPlans,
+  createIncomingMaterialInspectionPlan
+} from '../controllers/incoming-material-inspection-plan.controller.js';
 
+const router = express.Router();
+
+// GET all incoming material inspection plans
 router.get('/', getIncomingMaterialInspectionPlans);
+
+// POST a new incoming material inspection plan
 router.post('/', createIncomingMaterialInspectionPlan);
 
-module.exports = router;
-
+export default router;

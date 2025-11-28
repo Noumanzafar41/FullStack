@@ -11,7 +11,7 @@ import { ParameterService, ParameterRecord, CreateParameterPayload } from '../..
   styleUrl: './parameter-master.page.css'
 })
 export class ParameterMasterPage implements OnInit {
-  private readonly formBuilder = inject(FormBuilder);
+  private readonly fb = inject(FormBuilder);
   private readonly parameterService = inject(ParameterService);
 
   protected records: ParameterRecord[] = [];
@@ -21,7 +21,7 @@ export class ParameterMasterPage implements OnInit {
   protected saveError = '';
   protected showDialog = false;
 
-  protected readonly form = this.formBuilder.group({
+  protected readonly form = this.fb.group({
     parameterType: ['Functional', Validators.required],
     parameterName: ['', Validators.required],
     processProduct: ['', Validators.required],
@@ -33,30 +33,21 @@ export class ParameterMasterPage implements OnInit {
     this.fetchParameters();
   }
 
+  /** Open the form dialog for creating a new parameter */
   protected openDialog(): void {
     this.showDialog = true;
+    this.resetForm();
     this.saveError = '';
-    this.form.reset({
-      parameterType: 'Functional',
-      parameterName: '',
-      processProduct: '',
-      specCharacteristic: '',
-      parameterCode: ''
-    });
   }
 
+  /** Close the form dialog */
   protected closeDialog(): void {
     this.showDialog = false;
+    this.resetForm();
     this.saveError = '';
-    this.form.reset({
-      parameterType: 'Functional',
-      parameterName: '',
-      processProduct: '',
-      specCharacteristic: '',
-      parameterCode: ''
-    });
   }
 
+  /** Submit the form to create a new parameter */
   protected submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -66,21 +57,23 @@ export class ParameterMasterPage implements OnInit {
     this.isSaving = true;
     this.saveError = '';
 
-    this.parameterService.createParameter(this.form.value as CreateParameterPayload).subscribe({
+    const payload = this.form.value as CreateParameterPayload;
+
+    this.parameterService.createParameter(payload).subscribe({
       next: (record) => {
         this.records = [record, ...this.records];
         this.isSaving = false;
         this.closeDialog();
-        // Refresh the list to ensure we have the latest data
-        this.fetchParameters();
+        this.fetchParameters(); // Refresh to ensure latest data
       },
       error: (error) => {
-        this.saveError = error?.error?.message || 'Failed to save parameter.';
+        this.saveError = error?.error?.message ?? 'Failed to save parameter.';
         this.isSaving = false;
       }
     });
   }
 
+  /** Fetch all parameter records */
   private fetchParameters(): void {
     this.isLoading = true;
     this.loadError = '';
@@ -96,5 +89,15 @@ export class ParameterMasterPage implements OnInit {
       }
     });
   }
-}
 
+  /** Reset form to default values */
+  private resetForm(): void {
+    this.form.reset({
+      parameterType: 'Functional',
+      parameterName: '',
+      processProduct: '',
+      specCharacteristic: '',
+      parameterCode: ''
+    });
+  }
+}

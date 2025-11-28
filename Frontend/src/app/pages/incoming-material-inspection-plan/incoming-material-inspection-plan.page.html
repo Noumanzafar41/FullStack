@@ -35,7 +35,7 @@
             <td>{{ record.docDate | date : 'shortDate' }}</td>
             <td>{{ record.revisionNumber || '—' }}</td>
             <td>{{ record.preparedBy || '—' }}</td>
-            <td>{{ record.details?.length || 0 }}</td>
+            <td>{{ record.details.length || 0 }}</td>
             <td>{{ record.createdAt | date : 'short' }}</td>
             <td>
               <button type="button" class="detail-button" (click)="viewRecord(record)">Detail</button>

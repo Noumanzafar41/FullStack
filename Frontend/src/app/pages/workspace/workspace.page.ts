@@ -4,15 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
-type Module = {
-  title: string;
-  route: string;
-};
-
-type ModuleGroup = {
-  title: string;
-  items: Module[];
-};
+type Module = { title: string; route: string };
+type ModuleGroup = { title: string; items: Module[] };
 
 @Component({
   selector: 'app-workspace',
@@ -30,14 +23,13 @@ export class WorkspacePage {
   protected hideSidebar = false;
 
   constructor(private router: Router) {
-    // Check current route on initialization
-    this.updateSidebarVisibility();
-    
-    // Listen to route changes
+    this.updateSidebarVisibility(this.router.url);
+
+    // Listen to route changes and update sidebar
     this.router.events
-      .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe(() => {
-        this.updateSidebarVisibility();
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        this.updateSidebarVisibility(event.urlAfterRedirects);
       });
   }
 
@@ -55,48 +47,47 @@ export class WorkspacePage {
     {
       title: 'Inventory',
       items: [
-        { title: 'Item master', route: '/workspace/parameter-master' },
-        { title: 'Serial numbers', route: '/workspace/parameter-master' }
+        { title: 'Item Master', route: '/workspace/item-master' },
+        { title: 'Serial Numbers', route: '/workspace/serial-numbers' }
       ]
     },
     {
       title: 'Reports',
-      items: [{ title: 'Analytics', route: '/workspace/parameter-master' }]
+      items: [{ title: 'Analytics', route: '/workspace/analytics' }]
     }
   ];
 
+  /** Filter module groups based on search input */
   protected get filteredModuleGroups(): ModuleGroup[] {
     const term = this.searchTerm.trim().toLowerCase();
-    if (!term) {
-      return this.moduleGroups;
-    }
+    if (!term) return this.moduleGroups;
 
     return this.moduleGroups
-      .map((group) => ({
+      .map(group => ({
         ...group,
-        items: group.items.filter((item) => item.title.toLowerCase().includes(term))
+        items: group.items.filter(item => item.title.toLowerCase().includes(term))
       }))
-      .filter((group) => group.items.length > 0);
+      .filter(group => group.items.length > 0);
   }
 
+  /** Logout the user */
   protected logout(): void {
     try {
       localStorage.removeItem('sapbtp_token');
-    } catch (_error) {
-      // ignore storage errors
+    } catch {
+      // Ignore storage errors
     }
     this.router.navigate(['/login']);
   }
 
-  private updateSidebarVisibility(): void {
-    const url = this.router.url;
+  /** Update sidebar visibility based on current route */
+  private updateSidebarVisibility(currentUrl: string): void {
     const fullPageRoutes = [
       '/workspace/incoming-inspection',
       '/workspace/product-inspection',
       '/workspace/product-plan',
       '/workspace/incoming-plan'
     ];
-    this.hideSidebar = fullPageRoutes.some((route) => url.startsWith(route));
+    this.hideSidebar = fullPageRoutes.some(route => currentUrl.startsWith(route));
   }
 }
-

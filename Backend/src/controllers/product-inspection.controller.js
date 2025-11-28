@@ -1,9 +1,10 @@
-const { getPool, sql } = require('../database');
-const asyncHandler = require('../utils/asyncHandler');
-const { mapProductInspectionRecord } = require('../utils/mappers');
-const { toDecimal, toBool } = require('../utils/helpers');
+// src/controllers/product-inspection.controller.js
+import { getPool, sql } from '../database.js';
+import asyncHandler from '../utils/asyncHandler.js';
+import { mapProductInspectionRecord } from '../utils/mappers.js';
+import { toDecimal, toBool } from '../utils/helpers.js';
 
-const getProductInspections = asyncHandler(async (_req, res) => {
+export const getProductInspections = asyncHandler(async (_req, res) => {
   const pool = await getPool();
   const result = await pool
     .request()
@@ -11,14 +12,14 @@ const getProductInspections = asyncHandler(async (_req, res) => {
       `SELECT Id, ItemId, ItemDescription, ProductionOrderNo, ReceiptFromProduction, InspectedBy, ControlPlanNo, ContainerBagNo, BottlePelletNo,
               DocNumber, InspectionDate, ProductionOrderDate, SampleQty, Department, PreProduction, ProducedQty, AcceptedQty, RejectedQty,
               Status, Remarks, SpecialInstructions, Details, CreatedAt
-       FROM dbo.ProductInspections
+       FROM ProductInspections
        ORDER BY CreatedAt DESC`
     );
 
   res.json(result.recordset.map(mapProductInspectionRecord));
 });
 
-const createProductInspection = asyncHandler(async (req, res) => {
+export const createProductInspection = asyncHandler(async (req, res) => {
   const {
     itemId,
     itemDescription,
@@ -48,7 +49,7 @@ const createProductInspection = asyncHandler(async (req, res) => {
   }
 
   const pool = await getPool();
-  const insert = await pool
+  await pool
     .request()
     .input('itemId', sql.NVarChar(100), itemId.trim())
     .input('itemDescription', sql.NVarChar(255), itemDescription.trim())
@@ -72,28 +73,21 @@ const createProductInspection = asyncHandler(async (req, res) => {
     .input('specialInstructions', sql.NVarChar(sql.MAX), specialInstructions ? specialInstructions.trim() : null)
     .input('details', sql.NVarChar(sql.MAX), JSON.stringify(details))
     .query(`
-      INSERT INTO dbo.ProductInspections (
+      INSERT INTO ProductInspections (
         ItemId, ItemDescription, ProductionOrderNo, ReceiptFromProduction, InspectedBy, ControlPlanNo,
         ContainerBagNo, BottlePelletNo, DocNumber, InspectionDate, ProductionOrderDate, SampleQty,
         Department, PreProduction, ProducedQty, AcceptedQty, RejectedQty, Status, Remarks, SpecialInstructions, Details
       )
-      OUTPUT INSERTED.Id, INSERTED.ItemId, INSERTED.ItemDescription, INSERTED.ProductionOrderNo, INSERTED.ReceiptFromProduction,
-             INSERTED.InspectedBy, INSERTED.ControlPlanNo, INSERTED.ContainerBagNo, INSERTED.BottlePelletNo, INSERTED.DocNumber,
-             INSERTED.InspectionDate, INSERTED.ProductionOrderDate, INSERTED.SampleQty, INSERTED.Department, INSERTED.PreProduction,
-             INSERTED.ProducedQty, INSERTED.AcceptedQty, INSERTED.RejectedQty, INSERTED.Status, INSERTED.Remarks, INSERTED.SpecialInstructions,
-             INSERTED.Details, INSERTED.CreatedAt
       VALUES (
         @itemId, @itemDescription, @productionOrderNo, @receiptFromProduction, @inspectedBy, @controlPlanNo,
         @containerBagNo, @bottlePelletNo, @docNumber, @inspectionDate, @productionOrderDate, @sampleQty,
         @department, @preProduction, @producedQty, @acceptedQty, @rejectedQty, @status, @remarks, @specialInstructions, @details
-      );
+      )
     `);
 
-  res.status(201).json(mapProductInspectionRecord(insert.recordset[0]));
+  const lastInserted = await pool
+    .request()
+    .query('SELECT * FROM ProductInspections ORDER BY CreatedAt DESC LIMIT 1');
+
+  res.status(201).json(mapProductInspectionRecord(lastInserted.recordset[0]));
 });
-
-module.exports = {
-  getProductInspections,
-  createProductInspection
-};
-

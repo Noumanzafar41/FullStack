@@ -1,21 +1,22 @@
-const { getPool, sql } = require('../database');
-const asyncHandler = require('../utils/asyncHandler');
-const { mapIncomingInspectionPlanRecord } = require('../utils/mappers');
+// src/controllers/incoming-material-inspection-plan.controller.js
+import { getPool, sql } from '../database.js';
+import asyncHandler from '../utils/asyncHandler.js';
+import { mapIncomingInspectionPlanRecord } from '../utils/mappers.js';
 
-const getIncomingMaterialInspectionPlans = asyncHandler(async (_req, res) => {
+export const getIncomingMaterialInspectionPlans = asyncHandler(async (_req, res) => {
   const pool = await getPool();
   const result = await pool
     .request()
     .query(
       `SELECT Id, ItemId, ItemDescription, DocNumber, DocDate, RevisionNumber, PreparedBy, Remarks, Details, CreatedAt
-       FROM dbo.IncomingMaterialInspectionPlans
+       FROM IncomingMaterialInspectionPlans
        ORDER BY CreatedAt DESC`
     );
 
   res.json(result.recordset.map(mapIncomingInspectionPlanRecord));
 });
 
-const createIncomingMaterialInspectionPlan = asyncHandler(async (req, res) => {
+export const createIncomingMaterialInspectionPlan = asyncHandler(async (req, res) => {
   const { itemId, itemDescription, docNumber, docDate, revisionNumber, preparedBy, remarks, details } = req.body || {};
 
   if (!itemId || !itemDescription || !details || !Array.isArray(details) || !details.length) {
@@ -23,7 +24,8 @@ const createIncomingMaterialInspectionPlan = asyncHandler(async (req, res) => {
   }
 
   const pool = await getPool();
-  const insert = await pool
+
+  await pool
     .request()
     .input('itemId', sql.NVarChar(100), itemId.trim())
     .input('itemDescription', sql.NVarChar(255), itemDescription.trim())
@@ -34,17 +36,15 @@ const createIncomingMaterialInspectionPlan = asyncHandler(async (req, res) => {
     .input('remarks', sql.NVarChar(255), remarks ? remarks.trim() : null)
     .input('details', sql.NVarChar(sql.MAX), JSON.stringify(details))
     .query(`
-      INSERT INTO dbo.IncomingMaterialInspectionPlans (ItemId, ItemDescription, DocNumber, DocDate, RevisionNumber, PreparedBy, Remarks, Details)
-      OUTPUT INSERTED.Id, INSERTED.ItemId, INSERTED.ItemDescription, INSERTED.DocNumber, INSERTED.DocDate, INSERTED.RevisionNumber,
-             INSERTED.PreparedBy, INSERTED.Remarks, INSERTED.Details, INSERTED.CreatedAt
-      VALUES (@itemId, @itemDescription, @docNumber, @docDate, @revisionNumber, @preparedBy, @remarks, @details);
+      INSERT INTO IncomingMaterialInspectionPlans 
+      (ItemId, ItemDescription, DocNumber, DocDate, RevisionNumber, PreparedBy, Remarks, Details)
+      VALUES (@itemId, @itemDescription, @docNumber, @docDate, @revisionNumber, @preparedBy, @remarks, @details)
     `);
 
-  res.status(201).json(mapIncomingInspectionPlanRecord(insert.recordset[0]));
+  // Retrieve the last inserted record
+  const lastInserted = await pool
+    .request()
+    .query(`SELECT * FROM IncomingMaterialInspectionPlans ORDER BY CreatedAt DESC LIMIT 1`);
+
+  res.status(201).json(mapIncomingInspectionPlanRecord(lastInserted.recordset[0]));
 });
-
-module.exports = {
-  getIncomingMaterialInspectionPlans,
-  createIncomingMaterialInspectionPlan
-};
-

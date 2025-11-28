@@ -59,16 +59,19 @@ export class ProductInspectionPage implements OnInit {
     this.fetchRecords();
   }
 
+  /** Add a new inspection detail row */
   protected addDetailRow(): void {
     this.details.push(this.buildDetailGroup());
   }
 
+  /** Remove an inspection detail row */
   protected removeDetailRow(index: number): void {
     if (this.details.length > 1) {
       this.details.removeAt(index);
     }
   }
 
+  /** Open form dialog for new inspection */
   protected openDialog(): void {
     this.isReadOnly = false;
     this.showDialog = true;
@@ -78,6 +81,7 @@ export class ProductInspectionPage implements OnInit {
     this.resetDetailRows();
   }
 
+  /** Close the form dialog */
   protected closeDialog(): void {
     this.showDialog = false;
     this.isReadOnly = false;
@@ -87,6 +91,7 @@ export class ProductInspectionPage implements OnInit {
     this.resetDetailRows();
   }
 
+  /** Submit the form to create a product inspection */
   protected submit(): void {
     if (this.form.invalid || this.isReadOnly) {
       this.form.markAllAsTouched();
@@ -112,12 +117,13 @@ export class ProductInspectionPage implements OnInit {
         this.fetchRecords();
       },
       error: (error) => {
-        this.saveError = error?.error?.message || 'Failed to save inspection.';
+        this.saveError = error?.error?.message ?? 'Failed to save inspection.';
         this.isSaving = false;
       }
     });
   }
 
+  /** Build a single form group for inspection details */
   private buildDetailGroup(): FormGroup {
     return this.fb.group({
       parameterType: [''],
@@ -130,55 +136,60 @@ export class ProductInspectionPage implements OnInit {
     });
   }
 
+  /** View an existing record in read-only mode */
   protected viewRecord(record: ProductInspectionRecord): void {
     this.isReadOnly = true;
     this.showDialog = true;
     this.saveError = '';
     this.form.enable({ emitEvent: false });
+
     this.form.patchValue({
-      itemId: record.itemId || '',
-      itemDescription: record.itemDescription || '',
-      productionOrderNo: record.productionOrderNo || '',
-      receiptFromProduction: record.receiptFromProduction || '',
-      inspectedBy: record.inspectedBy || '',
-      controlPlanNo: record.controlPlanNo || '',
-      containerBagNo: record.containerBagNo || '',
-      bottlePelletNo: record.bottlePelletNo || '',
-      docNumber: record.docNumber || '',
-      inspectionDate: record.inspectionDate ? record.inspectionDate.split('T')[0] : '',
-      productionOrderDate: record.productionOrderDate ? record.productionOrderDate.split('T')[0] : '',
-      sampleQty: record.sampleQty || 0,
-      department: record.department || '',
+      itemId: record.itemId ?? '',
+      itemDescription: record.itemDescription ?? '',
+      productionOrderNo: record.productionOrderNo ?? '',
+      receiptFromProduction: record.receiptFromProduction ?? '',
+      inspectedBy: record.inspectedBy ?? '',
+      controlPlanNo: record.controlPlanNo ?? '',
+      containerBagNo: record.containerBagNo ?? '',
+      bottlePelletNo: record.bottlePelletNo ?? '',
+      docNumber: record.docNumber ?? '',
+      inspectionDate: record.inspectionDate?.split('T')[0] ?? '',
+      productionOrderDate: record.productionOrderDate?.split('T')[0] ?? '',
+      sampleQty: record.sampleQty ?? 0,
+      department: record.department ?? '',
       preProduction: Boolean(record.preProduction),
-      producedQty: record.producedQty || 0,
-      acceptedQty: record.acceptedQty || 0,
-      rejectedQty: record.rejectedQty || 0,
-      status: record.status || '',
-      remarks: record.remarks || '',
-      specialInstructions: record.specialInstructions || ''
+      producedQty: record.producedQty ?? 0,
+      acceptedQty: record.acceptedQty ?? 0,
+      rejectedQty: record.rejectedQty ?? 0,
+      status: record.status ?? '',
+      remarks: record.remarks ?? '',
+      specialInstructions: record.specialInstructions ?? ''
     });
+
     this.populateDetailRows(record.details);
     this.form.disable({ emitEvent: false });
   }
 
+  /** Reset details form array to one blank row */
   private resetDetailRows(): void {
     this.details.clear();
     this.details.push(this.buildDetailGroup());
   }
 
+  /** Populate detail rows from a record */
   private populateDetailRows(details?: ProductInspectionDetail[]): void {
     this.details.clear();
     if (details?.length) {
       details.forEach((detail) => {
         const group = this.buildDetailGroup();
         group.patchValue({
-          parameterType: detail.parameterType || '',
-          parameterName: detail.parameterName || '',
-          specification: detail.specification || '',
-          sampleSize: Number(detail.sampleSize) || 0,
-          result: Number(detail.result) || 0,
-          stdDeviation: Number(detail.stdDeviation) || 0,
-          remarks: detail.remarks || ''
+          parameterType: detail.parameterType ?? '',
+          parameterName: detail.parameterName ?? '',
+          specification: detail.specification ?? '',
+          sampleSize: Number(detail.sampleSize) ?? 0,
+          result: Number(detail.result) ?? 0,
+          stdDeviation: Number(detail.stdDeviation) ?? 0,
+          remarks: detail.remarks ?? ''
         });
         group.disable({ emitEvent: false });
         this.details.push(group);
@@ -188,6 +199,7 @@ export class ProductInspectionPage implements OnInit {
     }
   }
 
+  /** Default blank state for the main form */
   private getBlankFormState() {
     return {
       itemId: '',
@@ -213,6 +225,7 @@ export class ProductInspectionPage implements OnInit {
     };
   }
 
+  /** Fetch all product inspection records */
   private fetchRecords(): void {
     this.isLoading = true;
     this.loadError = '';
@@ -229,4 +242,3 @@ export class ProductInspectionPage implements OnInit {
     });
   }
 }
-

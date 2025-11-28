@@ -13,6 +13,7 @@ export const routes: Routes = [
   {
     path: 'workspace',
     component: WorkspacePage,
+    // canActivate: [AuthGuard], // optional
     title: 'Workspace | AddOnTest Manager',
     children: [
       { path: '', redirectTo: 'parameter-master', pathMatch: 'full' },

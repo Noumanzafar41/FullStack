@@ -1,23 +1,24 @@
-const { getPool, sql } = require('../database');
-const asyncHandler = require('../utils/asyncHandler');
-const { mapProductInspectionPlanRecord } = require('../utils/mappers');
-const { toDecimal } = require('../utils/helpers');
+// src/controllers/product-inspection-plan.controller.js
+import { getPool, sql } from '../database.js';
+import asyncHandler from '../utils/asyncHandler.js';
+import { mapProductInspectionPlanRecord } from '../utils/mappers.js';
+import { toDecimal } from '../utils/helpers.js';
 
-const getProductInspectionPlans = asyncHandler(async (_req, res) => {
+export const getProductInspectionPlans = asyncHandler(async (_req, res) => {
   const pool = await getPool();
   const result = await pool
     .request()
     .query(
       `SELECT Id, ItemId, ItemDescription, PlanType, Frequency, Customer, ContactPerson, SupplierPlant, CustomerApproval,
               DocNumber, PlanDate, SampleSize, PreparedBy, RevisionNumber, Remarks, Details, CreatedAt
-       FROM dbo.ProductInspectionPlans
+       FROM ProductInspectionPlans
        ORDER BY CreatedAt DESC`
     );
 
   res.json(result.recordset.map(mapProductInspectionPlanRecord));
 });
 
-const createProductInspectionPlan = asyncHandler(async (req, res) => {
+export const createProductInspectionPlan = asyncHandler(async (req, res) => {
   const {
     itemId,
     itemDescription,
@@ -41,7 +42,8 @@ const createProductInspectionPlan = asyncHandler(async (req, res) => {
   }
 
   const pool = await getPool();
-  const insert = await pool
+
+  await pool
     .request()
     .input('itemId', sql.NVarChar(100), itemId.trim())
     .input('itemDescription', sql.NVarChar(255), itemDescription.trim())
@@ -59,24 +61,19 @@ const createProductInspectionPlan = asyncHandler(async (req, res) => {
     .input('remarks', sql.NVarChar(255), remarks ? remarks.trim() : null)
     .input('details', sql.NVarChar(sql.MAX), JSON.stringify(details))
     .query(`
-      INSERT INTO dbo.ProductInspectionPlans (
+      INSERT INTO ProductInspectionPlans (
         ItemId, ItemDescription, PlanType, Frequency, Customer, ContactPerson, SupplierPlant, CustomerApproval,
         DocNumber, PlanDate, SampleSize, PreparedBy, RevisionNumber, Remarks, Details
       )
-      OUTPUT INSERTED.Id, INSERTED.ItemId, INSERTED.ItemDescription, INSERTED.PlanType, INSERTED.Frequency, INSERTED.Customer,
-             INSERTED.ContactPerson, INSERTED.SupplierPlant, INSERTED.CustomerApproval, INSERTED.DocNumber, INSERTED.PlanDate,
-             INSERTED.SampleSize, INSERTED.PreparedBy, INSERTED.RevisionNumber, INSERTED.Remarks, INSERTED.Details, INSERTED.CreatedAt
       VALUES (
         @itemId, @itemDescription, @planType, @frequency, @customer, @contactPerson, @supplierPlant, @customerApproval,
         @docNumber, @planDate, @sampleSize, @preparedBy, @revisionNumber, @remarks, @details
-      );
+      )
     `);
 
-  res.status(201).json(mapProductInspectionPlanRecord(insert.recordset[0]));
+  const lastInserted = await pool
+    .request()
+    .query('SELECT * FROM ProductInspectionPlans ORDER BY CreatedAt DESC LIMIT 1');
+
+  res.status(201).json(mapProductInspectionPlanRecord(lastInserted.recordset[0]));
 });
-
-module.exports = {
-  getProductInspectionPlans,
-  createProductInspectionPlan
-};
-

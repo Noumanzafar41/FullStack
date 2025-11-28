@@ -1,7 +1,11 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
+// ---------------------
+// Data Interfaces
+// ---------------------
 export interface ParameterRecord {
   id: number;
   parameterType: string;
@@ -12,6 +16,7 @@ export interface ParameterRecord {
   createdAt: string;
 }
 
+// Product Inspection
 export interface ProductInspectionDetail {
   parameterType: string;
   parameterName: string;
@@ -48,6 +53,7 @@ export interface ProductInspectionRecord {
   createdAt: string;
 }
 
+// Incoming Material Inspection
 export interface IncomingInspectionDetail {
   itemId: string;
   itemDescription: string;
@@ -78,6 +84,7 @@ export interface IncomingMaterialInspectionRecord {
   createdAt: string;
 }
 
+// Product Inspection Plan
 export interface ProductInspectionPlanDetail {
   parameterType: string;
   parameterName: string;
@@ -114,6 +121,7 @@ export interface ProductInspectionPlanRecord {
   createdAt: string;
 }
 
+// Incoming Material Inspection Plan
 export interface IncomingMaterialInspectionPlanDetail {
   parameterName: string;
   specifications: string;
@@ -135,56 +143,108 @@ export interface IncomingMaterialInspectionPlanRecord {
   createdAt: string;
 }
 
+// ---------------------
+// Payload types
+// ---------------------
 export type CreateParameterPayload = Omit<ParameterRecord, 'id' | 'createdAt'>;
 export type CreateProductInspectionPayload = Omit<ProductInspectionRecord, 'id' | 'createdAt'>;
 export type CreateIncomingMaterialInspectionPayload = Omit<IncomingMaterialInspectionRecord, 'id' | 'createdAt'>;
 export type CreateProductInspectionPlanPayload = Omit<ProductInspectionPlanRecord, 'id' | 'createdAt'>;
 export type CreateIncomingMaterialInspectionPlanPayload = Omit<IncomingMaterialInspectionPlanRecord, 'id' | 'createdAt'>;
 
+// ---------------------
+// Dynamic API URL
+// ---------------------
+const resolveApiBase = (): string => {
+  const globalConfig = typeof window !== 'undefined' ? (window as any).__SAPBTP_API_URL : undefined;
+  const envConfig = (import.meta as any)?.env?.NG_APP_API_URL as string | undefined;
+  const configured = globalConfig || envConfig;
+
+  if (configured) return configured.replace(/\/$/, '');
+
+  if (typeof window !== 'undefined' && window.location) {
+    const { protocol, hostname, port, host, origin } = window.location;
+    if (hostname === 'localhost' && port && port !== '4200') return `${protocol}//${hostname}:3100/api`;
+    if (host.startsWith('port') && host.includes('applicationstudio.cloud.sap')) {
+      const basHost = host.replace(/^port\d+/, 'port3100');
+      return `${protocol}//${basHost}/api`;
+    }
+    if (origin) return `${origin}/api`;
+  }
+
+  return '/api';
+};
+
+// ---------------------
+// Service
+// ---------------------
 @Injectable({
   providedIn: 'root'
 })
 export class ParameterService {
   private readonly http = inject(HttpClient);
-  private readonly apiBase = 'http://localhost:3000/api';
+  private readonly apiBase = resolveApiBase();
 
+  // ---------------------
+  // Parameters
+  // ---------------------
   listParameters(): Observable<ParameterRecord[]> {
-    return this.http.get<ParameterRecord[]>(`${this.apiBase}/parameters`);
+    return this.http.get<ParameterRecord[]>(`${this.apiBase}/parameters`).pipe(catchError(this.handleError));
   }
 
   createParameter(payload: CreateParameterPayload): Observable<ParameterRecord> {
-    return this.http.post<ParameterRecord>(`${this.apiBase}/parameters`, payload);
+    return this.http.post<ParameterRecord>(`${this.apiBase}/parameters`, payload).pipe(catchError(this.handleError));
   }
 
+  // ---------------------
+  // Product Inspections
+  // ---------------------
   listProductInspections(): Observable<ProductInspectionRecord[]> {
-    return this.http.get<ProductInspectionRecord[]>(`${this.apiBase}/product-inspections`);
+    return this.http.get<ProductInspectionRecord[]>(`${this.apiBase}/product-inspections`).pipe(catchError(this.handleError));
   }
 
   createProductInspection(payload: CreateProductInspectionPayload): Observable<ProductInspectionRecord> {
-    return this.http.post<ProductInspectionRecord>(`${this.apiBase}/product-inspections`, payload);
+    return this.http.post<ProductInspectionRecord>(`${this.apiBase}/product-inspections`, payload).pipe(catchError(this.handleError));
   }
 
+  // ---------------------
+  // Incoming Material Inspections
+  // ---------------------
   listIncomingMaterialInspections(): Observable<IncomingMaterialInspectionRecord[]> {
-    return this.http.get<IncomingMaterialInspectionRecord[]>(`${this.apiBase}/incoming-material-inspections`);
+    return this.http.get<IncomingMaterialInspectionRecord[]>(`${this.apiBase}/incoming-material-inspections`).pipe(catchError(this.handleError));
   }
 
   createIncomingMaterialInspection(payload: CreateIncomingMaterialInspectionPayload): Observable<IncomingMaterialInspectionRecord> {
-    return this.http.post<IncomingMaterialInspectionRecord>(`${this.apiBase}/incoming-material-inspections`, payload);
+    return this.http.post<IncomingMaterialInspectionRecord>(`${this.apiBase}/incoming-material-inspections`, payload).pipe(catchError(this.handleError));
   }
 
+  // ---------------------
+  // Product Inspection Plans
+  // ---------------------
   listProductInspectionPlans(): Observable<ProductInspectionPlanRecord[]> {
-    return this.http.get<ProductInspectionPlanRecord[]>(`${this.apiBase}/product-inspection-plans`);
+    return this.http.get<ProductInspectionPlanRecord[]>(`${this.apiBase}/product-inspection-plans`).pipe(catchError(this.handleError));
   }
 
   createProductInspectionPlan(payload: CreateProductInspectionPlanPayload): Observable<ProductInspectionPlanRecord> {
-    return this.http.post<ProductInspectionPlanRecord>(`${this.apiBase}/product-inspection-plans`, payload);
+    return this.http.post<ProductInspectionPlanRecord>(`${this.apiBase}/product-inspection-plans`, payload).pipe(catchError(this.handleError));
   }
 
+  // ---------------------
+  // Incoming Material Inspection Plans
+  // ---------------------
   listIncomingMaterialInspectionPlans(): Observable<IncomingMaterialInspectionPlanRecord[]> {
-    return this.http.get<IncomingMaterialInspectionPlanRecord[]>(`${this.apiBase}/incoming-material-inspection-plans`);
+    return this.http.get<IncomingMaterialInspectionPlanRecord[]>(`${this.apiBase}/incoming-material-inspection-plans`).pipe(catchError(this.handleError));
   }
 
   createIncomingMaterialInspectionPlan(payload: CreateIncomingMaterialInspectionPlanPayload): Observable<IncomingMaterialInspectionPlanRecord> {
-    return this.http.post<IncomingMaterialInspectionPlanRecord>(`${this.apiBase}/incoming-material-inspection-plans`, payload);
+    return this.http.post<IncomingMaterialInspectionPlanRecord>(`${this.apiBase}/incoming-material-inspection-plans`, payload).pipe(catchError(this.handleError));
+  }
+
+  // ---------------------
+  // Error handler
+  // ---------------------
+  private handleError(error: any) {
+    console.error('ParameterService Error:', error);
+    return throwError(() => error);
   }
 }

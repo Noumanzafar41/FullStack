@@ -53,16 +53,19 @@ export class ProductInspectionPlanPage implements OnInit {
     this.fetchRecords();
   }
 
+  /** Add a new inspection plan detail row */
   protected addDetailRow(): void {
     this.details.push(this.buildDetailGroup());
   }
 
+  /** Remove a detail row */
   protected removeDetailRow(index: number): void {
     if (this.details.length > 1) {
       this.details.removeAt(index);
     }
   }
 
+  /** Open the form dialog for a new record */
   protected openDialog(): void {
     this.isReadOnly = false;
     this.showDialog = true;
@@ -72,6 +75,7 @@ export class ProductInspectionPlanPage implements OnInit {
     this.resetDetailRows();
   }
 
+  /** Close the form dialog */
   protected closeDialog(): void {
     this.showDialog = false;
     this.isReadOnly = false;
@@ -81,6 +85,7 @@ export class ProductInspectionPlanPage implements OnInit {
     this.resetDetailRows();
   }
 
+  /** Submit the form to create a new product inspection plan */
   protected submit(): void {
     if (this.form.invalid || this.isReadOnly) {
       this.form.markAllAsTouched();
@@ -91,7 +96,7 @@ export class ProductInspectionPlanPage implements OnInit {
     this.saveError = '';
 
     const payload = this.form.value as CreateProductInspectionPlanPayload;
-    payload.details = (payload.details || []).map((detail) => ({
+    payload.details = (payload.details || []).map(detail => ({
       ...detail,
       sampleSize: Number(detail.sampleSize) || 0
     })) as ProductInspectionPlanDetail[];
@@ -104,56 +109,60 @@ export class ProductInspectionPlanPage implements OnInit {
         this.fetchRecords();
       },
       error: (error) => {
-        this.saveError = error?.error?.message || 'Failed to save plan.';
+        this.saveError = error?.error?.message ?? 'Failed to save plan.';
         this.isSaving = false;
       }
     });
   }
 
+  /** View a record in read-only mode */
   protected viewRecord(record: ProductInspectionPlanRecord): void {
     this.isReadOnly = true;
     this.showDialog = true;
     this.saveError = '';
     this.form.enable({ emitEvent: false });
+
     this.form.patchValue({
-      itemId: record.itemId || '',
-      itemDescription: record.itemDescription || '',
-      planType: record.planType || '',
-      frequency: record.frequency || '',
-      customer: record.customer || '',
-      contactPerson: record.contactPerson || '',
-      supplierPlant: record.supplierPlant || '',
-      customerApproval: record.customerApproval || '',
-      docNumber: record.docNumber || '',
-      planDate: record.planDate ? record.planDate.split('T')[0] : '',
-      sampleSize: record.sampleSize || 0,
-      preparedBy: record.preparedBy || '',
-      revisionNumber: record.revisionNumber || '',
-      remarks: record.remarks || ''
+      itemId: record.itemId ?? '',
+      itemDescription: record.itemDescription ?? '',
+      planType: record.planType ?? '',
+      frequency: record.frequency ?? '',
+      customer: record.customer ?? '',
+      contactPerson: record.contactPerson ?? '',
+      supplierPlant: record.supplierPlant ?? '',
+      customerApproval: record.customerApproval ?? '',
+      docNumber: record.docNumber ?? '',
+      planDate: record.planDate?.split('T')[0] ?? '',
+      sampleSize: record.sampleSize ?? 0,
+      preparedBy: record.preparedBy ?? '',
+      revisionNumber: record.revisionNumber ?? '',
+      remarks: record.remarks ?? ''
     });
+
     this.populateDetailRows(record.details);
     this.form.disable({ emitEvent: false });
   }
 
+  /** Populate detail rows from a record */
   private populateDetailRows(details?: ProductInspectionPlanDetail[]): void {
     this.details.clear();
     if (details?.length) {
-      details.forEach((detail) => {
+      details.forEach(detail => {
         const group = this.buildDetailGroup();
         group.patchValue({
-          parameterType: detail.parameterType || '',
-          parameterName: detail.parameterName || '',
-          specifications: detail.specifications || '',
-          specCharacteristics: detail.specCharacteristics || '',
-          controlMethod: detail.controlMethod || '',
-          frequencyType: detail.frequencyType || '',
-          frequencyValue: detail.frequencyValue || '',
-          sampleSize: Number(detail.sampleSize) || 0,
-          machineNo: detail.machineNo || '',
-          toolNo: detail.toolNo || '',
-          inspectionMethod: detail.inspectionMethod || '',
-          reactionPlan: detail.reactionPlan || '',
-          correctiveAction: detail.correctiveAction || ''
+          parameterType: detail.parameterType ?? '',
+          parameterName: detail.parameterName ?? '',
+          specifications: detail.specifications ?? '',
+          specCharacteristics: detail.specCharacteristics ?? '',
+          controlMethod: detail.controlMethod ?? '',
+          frequencyType: detail.frequencyType ?? '',
+          frequencyValue: detail.frequencyValue ?? '',
+          sampleSize: Number(detail.sampleSize) ?? 0,
+          machineNo: detail.machineNo ?? '',
+          toolNo: detail.toolNo ?? '',
+          inspectionMethod: detail.inspectionMethod ?? '',
+          reactionPlan: detail.reactionPlan ?? '',
+          correctiveAction: detail.correctiveAction ?? ''
         });
         group.disable({ emitEvent: false });
         this.details.push(group);
@@ -163,11 +172,13 @@ export class ProductInspectionPlanPage implements OnInit {
     }
   }
 
+  /** Reset detail rows to one blank row */
   private resetDetailRows(): void {
     this.details.clear();
     this.details.push(this.buildDetailGroup());
   }
 
+  /** Returns a blank state for the main form */
   private getBlankFormState() {
     return {
       itemId: '',
@@ -187,6 +198,7 @@ export class ProductInspectionPlanPage implements OnInit {
     };
   }
 
+  /** Build a form group for a detail row */
   private buildDetailGroup(): FormGroup {
     return this.fb.group({
       parameterType: [''],
@@ -205,6 +217,7 @@ export class ProductInspectionPlanPage implements OnInit {
     });
   }
 
+  /** Fetch all product inspection plan records */
   private fetchRecords(): void {
     this.isLoading = true;
     this.loadError = '';
@@ -221,5 +234,3 @@ export class ProductInspectionPlanPage implements OnInit {
     });
   }
 }
-
-

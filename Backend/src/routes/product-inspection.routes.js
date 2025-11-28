@@ -1,9 +1,13 @@
-const express = require('express');
-const router = express.Router();
-const { getProductInspections, createProductInspection } = require('../controllers/product-inspection.controller');
+// src/routes/product-inspection.routes.js
+import express from 'express';
+import { getProductInspections, createProductInspection } from '../controllers/product-inspection.controller.js';
 
+const router = express.Router();
+
+// GET all product inspections
 router.get('/', getProductInspections);
+
+// POST a new product inspection
 router.post('/', createProductInspection);
 
-module.exports = router;
-
+export default router;

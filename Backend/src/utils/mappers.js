@@ -1,6 +1,6 @@
-const { parseDetails } = require('./helpers');
+import { parseDetails, toDecimal, toBool } from './helpers.js';
 
-const mapParameterRecord = (row) => ({
+export const mapParameterRecord = (row) => ({
   id: row.Id,
   parameterType: row.ParameterType,
   parameterName: row.ParameterName,
@@ -10,7 +10,7 @@ const mapParameterRecord = (row) => ({
   createdAt: row.CreatedAt
 });
 
-const mapProductInspectionRecord = (row) => ({
+export const mapProductInspectionRecord = (row) => ({
   id: row.Id,
   itemId: row.ItemId,
   itemDescription: row.ItemDescription,
@@ -23,12 +23,12 @@ const mapProductInspectionRecord = (row) => ({
   docNumber: row.DocNumber,
   inspectionDate: row.InspectionDate,
   productionOrderDate: row.ProductionOrderDate,
-  sampleQty: Number(row.SampleQty),
+  sampleQty: toDecimal(row.SampleQty),
   department: row.Department,
-  preProduction: Boolean(row.PreProduction),
-  producedQty: Number(row.ProducedQty),
-  acceptedQty: Number(row.AcceptedQty),
-  rejectedQty: Number(row.RejectedQty),
+  preProduction: toBool(row.PreProduction),
+  producedQty: toDecimal(row.ProducedQty),
+  acceptedQty: toDecimal(row.AcceptedQty),
+  rejectedQty: toDecimal(row.RejectedQty),
   status: row.Status,
   remarks: row.Remarks,
   specialInstructions: row.SpecialInstructions,
@@ -36,21 +36,21 @@ const mapProductInspectionRecord = (row) => ({
   createdAt: row.CreatedAt
 });
 
-const mapIncomingInspectionRecord = (row) => ({
+export const mapIncomingInspectionRecord = (row) => ({
   id: row.Id,
   inwardType: row.InwardType,
   grnType: row.GrnType,
   supplierVendor: row.SupplierVendor,
-  reworkLocation: Boolean(row.ReworkLocation),
-  inspectionRequired: Boolean(row.InspectionRequired),
-  testCertificate: Boolean(row.TestCertificate),
-  corrActionRequired: Boolean(row.CorrActionRequired),
+  reworkLocation: toBool(row.ReworkLocation),
+  inspectionRequired: toBool(row.InspectionRequired),
+  testCertificate: toBool(row.TestCertificate),
+  corrActionRequired: toBool(row.CorrActionRequired),
   remarks: row.Remarks,
   details: parseDetails(row.Details),
   createdAt: row.CreatedAt
 });
 
-const mapProductInspectionPlanRecord = (row) => ({
+export const mapProductInspectionPlanRecord = (row) => ({
   id: row.Id,
   itemId: row.ItemId,
   itemDescription: row.ItemDescription,
@@ -62,7 +62,7 @@ const mapProductInspectionPlanRecord = (row) => ({
   customerApproval: row.CustomerApproval,
   docNumber: row.DocNumber,
   planDate: row.PlanDate,
-  sampleSize: Number(row.SampleSize),
+  sampleSize: toDecimal(row.SampleSize),
   preparedBy: row.PreparedBy,
   revisionNumber: row.RevisionNumber,
   remarks: row.Remarks,
@@ -70,7 +70,7 @@ const mapProductInspectionPlanRecord = (row) => ({
   createdAt: row.CreatedAt
 });
 
-const mapIncomingInspectionPlanRecord = (row) => ({
+export const mapIncomingInspectionPlanRecord = (row) => ({
   id: row.Id,
   itemId: row.ItemId,
   itemDescription: row.ItemDescription,
@@ -82,12 +82,3 @@ const mapIncomingInspectionPlanRecord = (row) => ({
   details: parseDetails(row.Details),
   createdAt: row.CreatedAt
 });
-
-module.exports = {
-  mapParameterRecord,
-  mapProductInspectionRecord,
-  mapIncomingInspectionRecord,
-  mapProductInspectionPlanRecord,
-  mapIncomingInspectionPlanRecord
-};
-

@@ -27,7 +27,7 @@ export class IncomingMaterialInspectionPlanPage implements OnInit {
   protected showDialog = false;
   protected isReadOnly = false;
 
-  protected readonly form = this.fb.group({
+  protected readonly form: FormGroup = this.fb.group({
     itemId: ['', Validators.required],
     itemDescription: ['', Validators.required],
     docNumber: [''],
@@ -46,16 +46,51 @@ export class IncomingMaterialInspectionPlanPage implements OnInit {
     this.fetchRecords();
   }
 
+  /** Detail Rows Management */
   protected addDetailRow(): void {
     this.details.push(this.buildDetailGroup());
   }
 
   protected removeDetailRow(index: number): void {
-    if (this.details.length > 1) {
-      this.details.removeAt(index);
+    if (this.details.length > 1) this.details.removeAt(index);
+  }
+
+  private buildDetailGroup(): FormGroup {
+    return this.fb.group({
+      parameterName: ['', Validators.required],
+      specifications: ['', Validators.required],
+      results: ['', Validators.required],
+      inspectionMethod: ['', Validators.required],
+      remarks: ['']
+    });
+  }
+
+  private resetDetailRows(): void {
+    this.details.clear();
+    this.details.push(this.buildDetailGroup());
+  }
+
+  private populateDetailRows(details?: IncomingMaterialInspectionPlanDetail[]): void {
+    this.details.clear();
+    if (details?.length) {
+      details.forEach((detail) => {
+        const group = this.buildDetailGroup();
+        group.patchValue({
+          parameterName: detail.parameterName ?? '',
+          specifications: detail.specifications ?? '',
+          results: detail.results ?? '',
+          inspectionMethod: detail.inspectionMethod ?? '',
+          remarks: detail.remarks ?? ''
+        });
+        group.disable({ emitEvent: false });
+        this.details.push(group);
+      });
+    } else {
+      this.resetDetailRows();
     }
   }
 
+  /** Dialog Management */
   protected openDialog(): void {
     this.isReadOnly = false;
     this.showDialog = true;
@@ -74,6 +109,25 @@ export class IncomingMaterialInspectionPlanPage implements OnInit {
     this.resetDetailRows();
   }
 
+  protected viewRecord(record: IncomingMaterialInspectionPlanRecord): void {
+    this.isReadOnly = true;
+    this.showDialog = true;
+    this.saveError = '';
+    this.form.enable({ emitEvent: false });
+    this.form.patchValue({
+      itemId: record.itemId ?? '',
+      itemDescription: record.itemDescription ?? '',
+      docNumber: record.docNumber ?? '',
+      docDate: record.docDate ? record.docDate.split('T')[0] : '',
+      revisionNumber: record.revisionNumber ?? '',
+      preparedBy: record.preparedBy ?? '',
+      remarks: record.remarks ?? ''
+    });
+    this.populateDetailRows(record.details);
+    this.form.disable({ emitEvent: false });
+  }
+
+  /** Form Submission */
   protected submit(): void {
     if (this.form.invalid || this.isReadOnly) {
       this.form.markAllAsTouched();
@@ -96,81 +150,16 @@ export class IncomingMaterialInspectionPlanPage implements OnInit {
         this.fetchRecords();
       },
       error: (error) => {
-        this.saveError = error?.error?.message || 'Failed to save plan.';
+        this.saveError = error?.error?.message ?? 'Failed to save plan.';
         this.isSaving = false;
       }
     });
   }
 
-  private buildDetailGroup(): FormGroup {
-    return this.fb.group({
-      parameterName: ['', Validators.required],
-      specifications: ['', Validators.required],
-      results: ['', Validators.required],
-      inspectionMethod: ['', Validators.required],
-      remarks: ['']
-    });
-  }
-
-  protected viewRecord(record: IncomingMaterialInspectionPlanRecord): void {
-    this.isReadOnly = true;
-    this.showDialog = true;
-    this.saveError = '';
-    this.form.enable({ emitEvent: false });
-    this.form.patchValue({
-      itemId: record.itemId || '',
-      itemDescription: record.itemDescription || '',
-      docNumber: record.docNumber || '',
-      docDate: record.docDate ? record.docDate.split('T')[0] : '',
-      revisionNumber: record.revisionNumber || '',
-      preparedBy: record.preparedBy || '',
-      remarks: record.remarks || ''
-    });
-    this.populateDetailRows(record.details);
-    this.form.disable({ emitEvent: false });
-  }
-
-  private resetDetailRows(): void {
-    this.details.clear();
-    this.details.push(this.buildDetailGroup());
-  }
-
-  private populateDetailRows(details?: IncomingMaterialInspectionPlanDetail[]): void {
-    this.details.clear();
-    if (details?.length) {
-      details.forEach((detail) => {
-        const group = this.buildDetailGroup();
-        group.patchValue({
-          parameterName: detail.parameterName || '',
-          specifications: detail.specifications || '',
-          results: detail.results || '',
-          inspectionMethod: detail.inspectionMethod || '',
-          remarks: detail.remarks || ''
-        });
-        group.disable({ emitEvent: false });
-        this.details.push(group);
-      });
-    } else {
-      this.resetDetailRows();
-    }
-  }
-
-  private getBlankFormState() {
-    return {
-      itemId: '',
-      itemDescription: '',
-      docNumber: '',
-      docDate: '',
-      revisionNumber: '',
-      preparedBy: '',
-      remarks: ''
-    };
-  }
-
+  /** Fetch Records */
   private fetchRecords(): void {
     this.isLoading = true;
     this.loadError = '';
-
     this.qcService.listIncomingMaterialInspectionPlans().subscribe({
       next: (records) => {
         this.records = records;
@@ -182,5 +171,17 @@ export class IncomingMaterialInspectionPlanPage implements OnInit {
       }
     });
   }
-}
 
+  /** Utility */
+  private getBlankFormState() {
+    return {
+      itemId: '',
+      itemDescription: '',
+      docNumber: '',
+      docDate: '',
+      revisionNumber: '',
+      preparedBy: '',
+      remarks: ''
+    };
+  }
+}
