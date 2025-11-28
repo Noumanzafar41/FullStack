@@ -1,10 +1,11 @@
 // src/routes/auth.routes.js
 import express from 'express';
-import { login, register, forgotPassword } from '../controllers/auth.controller.js';
+import { login, register, forgotPassword, authStatus } from '../controllers/auth.controller.js';
 
 const router = express.Router();
 
 // Authentication routes
+router.get('/', authStatus);
 router.post('/login', login);
 router.post('/register', register);
 router.post('/forgot-password', forgotPassword);

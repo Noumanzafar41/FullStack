@@ -86,11 +86,6 @@ export const sql = {
 };
 
 /**
- * Health check
- */
-export const healthCheck = () => ({ status: 'ok', timestamp: new Date() });
-
-/**
  * Ensure database schema exists
  */
 export const ensureSchema = async () => {

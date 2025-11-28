@@ -3,6 +3,10 @@ import bcrypt from 'bcrypt';
 import { getPool, sql } from '../database.js';
 import asyncHandler from '../utils/asyncHandler.js';
 
+export const authStatus = asyncHandler(async (_req, res) => {
+  res.json({ message: 'Auth service ready.' });
+});
+
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body || {};
 

@@ -10,7 +10,7 @@ applications:
     services:
       - hana-db
     health-check-type: http
-    health-check-http-endpoint: /api/health
+    health-check-http-endpoint: /api/auth
     routes:
       - route: backend-api-${random-route}.cfapps.us10-001.hana.ondemand.com
 

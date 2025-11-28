@@ -6,8 +6,7 @@ import express from 'express';
 import cors from 'cors';
 
 // Now safe to import modules that use process.env
-import { ensureSchema, healthCheck } from './database.js';
-import healthRoutes from './routes/health.routes.js';
+import { ensureSchema } from './database.js';
 import authRoutes from './routes/auth.routes.js';
 import parameterRoutes from './routes/parameter.routes.js';
 import productInspectionRoutes from './routes/product-inspection.routes.js';
@@ -45,7 +44,7 @@ const corsOptions = {
 };
 
 const app = express();
-const port = process.env.PORT || 4000 ;
+const port = process.env.PORT || 3100;
 const host = process.env.HOST || '0.0.0.0'; // CF requires 0.0.0.0
 
 app.use(cors(corsOptions));
@@ -53,7 +52,6 @@ app.options('*', cors(corsOptions));
 app.use(express.json());
 
 // Register routes
-app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/parameters', parameterRoutes);
 app.use('/api/product-inspections', productInspectionRoutes);

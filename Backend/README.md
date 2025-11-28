@@ -88,10 +88,6 @@ All tables use HANA-compatible SQL syntax with:
 
 Passwords are hashed with `bcrypt`. Use the Angular frontend to register/login against these endpoints.
 
-## Health Check
-
-The application provides a health check endpoint at `/api/health` which is used by Cloud Foundry for health monitoring.
-
 ## Troubleshooting
 
 ### Connection Issues
